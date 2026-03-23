@@ -73,6 +73,25 @@ def dashboard():
                            en_proceso=en_proceso, cerrados=cerrados,
                            alta=alta, media=media, baja=baja,
                            promedio=promedio)
+@app.route('/historial')
+def historial():
+    busqueda = request.args.get('busqueda', '')
+    tipo = request.args.get('tipo', 'cliente')
+    tickets = []
+    if busqueda:
+        if tipo == 'cliente':
+            tickets = Ticket.query.filter(
+                Ticket.cliente.ilike(f'%{busqueda}%')
+            ).order_by(Ticket.fecha.desc()).all()
+        else:
+            tickets = Ticket.query.filter(
+                Ticket.tecnico.ilike(f'%{busqueda}%')
+            ).order_by(Ticket.fecha.desc()).all()
+    return render_template('historial.html',
+                           tickets=tickets,
+                           busqueda=busqueda,
+                           tipo=tipo)
 
 if __name__ == '__main__':
     app.run(debug=True)
+    

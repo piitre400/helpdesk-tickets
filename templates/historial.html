@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial - Help Desk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Historial de tickets</h2>
+        <a href="/" class="btn btn-outline-secondary">Volver a tickets</a>
+    </div>
+
+    <!-- Buscador -->
+    <form method="GET" action="/historial" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="tipo" class="form-select">
+                <option value="cliente" {% if tipo == 'cliente' %}selected{% endif %}>Por cliente</option>
+                <option value="tecnico" {% if tipo == 'tecnico' %}selected{% endif %}>Por técnico</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="text" name="busqueda" class="form-control"
+                   placeholder="Escribe un nombre..." value="{{ busqueda }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a href="/historial" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    <!-- Resultados -->
+    {% if busqueda %}
+        <p class="text-muted">{{ tickets|length }} resultado(s) para <strong>{{ busqueda }}</strong></p>
+        {% if tickets %}
+        <table class="table table-bordered table-hover bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Descripción</th>
+                    <th>Prioridad</th>
+                    <th>Técnico</th>
+                    <th>Estado</th>
+                    <th>Fecha visita</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.id }}</td>
+                    <td>{{ ticket.cliente }}</td>
+                    <td>{{ ticket.descripcion }}</td>
+                    <td>
+                        {% if ticket.prioridad == 'alta' %}
+                            <span class="badge bg-danger">Alta</span>
+                        {% elif ticket.prioridad == 'media' %}
+                            <span class="badge bg-warning text-dark">Media</span>
+                        {% else %}
+                            <span class="badge bg-success">Baja</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.tecnico }}</td>
+                    <td>
+                        {% if ticket.estado == 'abierto' %}
+                            <span class="badge bg-primary">Abierto</span>
+                        {% elif ticket.estado == 'en proceso' %}
+                            <span class="badge bg-warning text-dark">En proceso</span>
+                        {% else %}
+                            <span class="badge bg-success">Cerrado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ticket.fecha_visita %}
+                            {{ ticket.fecha_visita.strftime('%d/%m/%Y %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">Sin programar</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="/ticket/{{ ticket.id }}" class="btn btn-sm btn-outline-secondary">Ver</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-warning">No se encontraron tickets para ese nombre.</div>
+        {% endif %}
+    {% endif %}
+</div>
+</body>
+</html>
