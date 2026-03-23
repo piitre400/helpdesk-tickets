@@ -12,7 +12,7 @@
         <p><strong>Cliente:</strong> {{ ticket.cliente }}</p>
         <p><strong>Descripción:</strong> {{ ticket.descripcion }}</p>
         <p><strong>Prioridad:</strong> {{ ticket.prioridad }}</p>
-        <p><strong>Fecha:</strong> {{ ticket.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p><strong>Fecha creación:</strong> {{ ticket.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
     </div>
     <div class="card p-4">
         <h5 class="mb-3">Gestión del ticket</h5>
@@ -21,6 +21,11 @@
                 <label class="form-label">Técnico asignado</label>
                 <input type="text" name="tecnico" class="form-control"
                        value="{{ ticket.tecnico }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Fecha y hora de visita</label>
+                <input type="datetime-local" name="fecha_visita" class="form-control"
+                       value="{{ ticket.fecha_visita.strftime('%Y-%m-%dT%H:%M') if ticket.fecha_visita else '' }}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Estado</label>
@@ -39,4 +44,5 @@
 </div>
 </body>
 </html>
+
 

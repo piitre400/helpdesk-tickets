@@ -11,6 +11,31 @@
         <h2>Sistema de Tickets - Help Desk</h2>
         <a href="/nuevo" class="btn btn-primary">+ Nuevo Ticket</a>
     </div>
+
+    <!-- Filtros -->
+    <form method="GET" action="/" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="prioridad" class="form-select">
+                <option value="">Todas las prioridades</option>
+                <option value="alta" {% if prioridad == 'alta' %}selected{% endif %}>Alta</option>
+                <option value="media" {% if prioridad == 'media' %}selected{% endif %}>Media</option>
+                <option value="baja" {% if prioridad == 'baja' %}selected{% endif %}>Baja</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="estado" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="abierto" {% if estado == 'abierto' %}selected{% endif %}>Abierto</option>
+                <option value="en proceso" {% if estado == 'en proceso' %}selected{% endif %}>En proceso</option>
+                <option value="cerrado" {% if estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="/" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+    </form>
+
     <table class="table table-bordered table-hover bg-white">
         <thead class="table-dark">
             <tr>
@@ -20,7 +45,7 @@
                 <th>Prioridad</th>
                 <th>Técnico</th>
                 <th>Estado</th>
-                <th>Fecha</th>
+                <th>Fecha visita</th>
                 <th>Acción</th>
             </tr>
         </thead>
@@ -49,7 +74,13 @@
                         <span class="badge bg-success">Cerrado</span>
                     {% endif %}
                 </td>
-                <td>{{ ticket.fecha.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    {% if ticket.fecha_visita %}
+                        {{ ticket.fecha_visita.strftime('%d/%m/%Y %H:%M') }}
+                    {% else %}
+                        <span class="text-muted">Sin programar</span>
+                    {% endif %}
+                </td>
                 <td><a href="/ticket/{{ ticket.id }}" class="btn btn-sm btn-outline-secondary">Ver</a></td>
             </tr>
             {% endfor %}

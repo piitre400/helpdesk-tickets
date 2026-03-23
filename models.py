@@ -11,5 +11,4 @@ class Ticket(db.Model):
     tecnico = db.Column(db.String(100), default='Sin asignar')
     estado = db.Column(db.String(20), default='abierto')
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
-
-    
+    fecha_visita = db.Column(db.DateTime, nullable=True)
