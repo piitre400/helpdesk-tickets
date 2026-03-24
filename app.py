@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+from flask_mail import Mail, Message
 from models import db, Ticket
 from datetime import datetime
 
@@ -6,7 +7,15 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///helpdesk.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'curife23@gmail.com'
+app.config['MAIL_PASSWORD'] = 'nvmi nakl zrhu zfqq'
+app.config['MAIL_DEFAULT_SENDER'] = 'curife23@gmail.com'
+
 db.init_app(app)
+mail = Mail(app)
 
 with app.app_context():
     db.create_all()
@@ -41,12 +50,33 @@ def nuevo_ticket():
 def detalle_ticket(id):
     ticket = Ticket.query.get_or_404(id)
     if request.method == 'POST':
+        tecnico_anterior = ticket.tecnico
         ticket.tecnico = request.form['tecnico']
         ticket.estado = request.form['estado']
         fecha_visita_str = request.form.get('fecha_visita')
         if fecha_visita_str:
             ticket.fecha_visita = datetime.strptime(fecha_visita_str, '%Y-%m-%dT%H:%M')
         db.session.commit()
+        if ticket.tecnico != 'Sin asignar' and ticket.tecnico != tecnico_anterior:
+            try:
+                msg = Message(
+                    subject=f'Ticket #{ticket.id} asignado a ti',
+                    recipients=[app.config['MAIL_USERNAME']],
+                    body=f'''Hola {ticket.tecnico},
+
+Se te ha asignado el siguiente ticket:
+
+Cliente: {ticket.cliente}
+Descripcion: {ticket.descripcion}
+Prioridad: {ticket.prioridad}
+Fecha de visita: {ticket.fecha_visita.strftime('%d/%m/%Y %H:%M') if ticket.fecha_visita else 'Sin programar'}
+
+Ingresa al sistema para ver mas detalles.
+'''
+                )
+                mail.send(msg)
+            except Exception as e:
+                print(f'Error al enviar correo: {e}')
         return redirect(url_for('index'))
     return render_template('detalle_ticket.html', ticket=ticket)
 
@@ -59,7 +89,6 @@ def dashboard():
     alta = Ticket.query.filter_by(prioridad='alta').count()
     media = Ticket.query.filter_by(prioridad='media').count()
     baja = Ticket.query.filter_by(prioridad='baja').count()
-
     tickets_cerrados = Ticket.query.filter_by(estado='cerrado').all()
     tiempos = []
     for t in tickets_cerrados:
@@ -67,12 +96,12 @@ def dashboard():
             diff = (t.fecha_visita - t.fecha).total_seconds() / 3600
             tiempos.append(round(diff, 1))
     promedio = round(sum(tiempos) / len(tiempos), 1) if tiempos else 0
-
     return render_template('dashboard.html',
                            total=total, abiertos=abiertos,
                            en_proceso=en_proceso, cerrados=cerrados,
                            alta=alta, media=media, baja=baja,
                            promedio=promedio)
+
 @app.route('/historial')
 def historial():
     busqueda = request.args.get('busqueda', '')
@@ -94,4 +123,3 @@ def historial():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
